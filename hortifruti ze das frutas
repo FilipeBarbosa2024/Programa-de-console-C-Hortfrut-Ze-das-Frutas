@@ -1,0 +1,75 @@
+import tkinter as tk
+from tkinter import messagebox
+from tkinter import simpledialog
+
+# Lista para armazenar os produtos cadastrados
+produtos = []
+
+# Função para cadastrar um novo produto
+def cadastrar_produto():
+    nome = simpledialog.askstring("Cadastro de Produto", "Nome do Produto:")
+    if nome:
+        preco = simpledialog.askfloat("Cadastro de Produto", f"Preço do {nome}:")
+        quantidade = simpledialog.askinteger("Cadastro de Produto", f"Quantidade de {nome}:")
+        if preco and quantidade:
+            produtos.append({"nome": nome, "preco": preco, "quantidade": quantidade})
+            messagebox.showinfo("Cadastro", f"Produto {nome} cadastrado com sucesso!")
+        else:
+            messagebox.showerror("Erro", "Preço e quantidade precisam ser informados.")
+    else:
+        messagebox.showerror("Erro", "Nome do produto é obrigatório.")
+
+# Função para realizar a venda
+def realizar_venda():
+    if not produtos:
+        messagebox.showerror("Erro", "Nenhum produto cadastrado!")
+        return
+    
+    venda = []
+    total = 0
+    
+    while True:
+        nome_produto = simpledialog.askstring("Venda", "Nome do Produto (ou 'fim' para finalizar):")
+        if nome_produto.lower() == 'fim':
+            break
+        
+        # Verifica se o produto existe
+        produto = next((p for p in produtos if p["nome"].lower() == nome_produto.lower()), None)
+        if produto:
+            quantidade = simpledialog.askinteger("Venda", f"Quantidade de {nome_produto} desejada:")
+            if 0 < quantidade <= produto["quantidade"]:
+                produto["quantidade"] -= quantidade
+                venda.append({"nome": nome_produto, "quantidade": quantidade, "preco": produto["preco"]})
+                total += produto["preco"] * quantidade
+            else:
+                messagebox.showerror("Erro", f"Quantidade inválida para {nome_produto}. Estoque: {produto['quantidade']}")
+        else:
+            messagebox.showerror("Erro", f"Produto {nome_produto} não encontrado.")
+    
+    # Emissão da nota fiscal
+    if venda:
+        resumo_venda = "\n".join([f"{v['quantidade']} x {v['nome']} - R${v['preco']*v['quantidade']:.2f}" for v in venda])
+        messagebox.showinfo("Nota Fiscal", f"Venda Realizada:\n\n{resumo_venda}\n\nTotal: R${total:.2f}")
+    else:
+        messagebox.showinfo("Nota Fiscal", "Nenhuma venda realizada.")
+
+# Função para a tela principal
+def tela_principal():
+    root = tk.Tk()
+    root.title("Sistema Hortifruti")
+    
+    # Botões para cada ação
+    btn_cadastrar = tk.Button(root, text="Cadastrar Produto", command=cadastrar_produto, width=30)
+    btn_cadastrar.pack(pady=10)
+    
+    btn_venda = tk.Button(root, text="Realizar Venda", command=realizar_venda, width=30)
+    btn_venda.pack(pady=10)
+    
+    btn_sair = tk.Button(root, text="Sair", command=root.quit, width=30)
+    btn_sair.pack(pady=10)
+    
+    root.mainloop()
+
+# Iniciar a aplicação
+if __name__ == "__main__":
+    tela_principal()
